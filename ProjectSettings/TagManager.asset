@@ -12,6 +12,8 @@ TagManager:
   - waypoint3
   - waypoint4
   - waypoint5
+  - EnemyShot
+  - FriendlyShot
   layers:
   - Default
   - TransparentFX
