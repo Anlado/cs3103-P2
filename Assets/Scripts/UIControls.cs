@@ -3,35 +3,22 @@ using UnityEngine.UI;
 
 public class UIControls : MonoBehaviour
 {
-    public GameObject invPanel;
+    public GameObject statsPanel;
 
-    void Start()
+    private void Start()
     {
-        invPanel.SetActive(false);
+        statsPanel.SetActive(false);
     }
 
-    void Update()
+    public void onstatsPanelPress()
     {
-        
-    }
-
-    public void QuickSlot1()
-    {
-        
-    }
-
-    public void QuickSlot2()
-    {
-
-    }
-
-    public void QuickSlot3()
-    {
-
-    }
-
-    public void QuickSlot4()
-    {
-
+        if (statsPanel.activeInHierarchy)
+        {
+            statsPanel.SetActive(false);
+        }
+        else
+        {
+            statsPanel.SetActive(true);
+        }
     }
 }

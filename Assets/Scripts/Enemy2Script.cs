@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 public class Enemy2Script : MonoBehaviour
 {
@@ -10,40 +11,61 @@ public class Enemy2Script : MonoBehaviour
     int currentWaypoint;
     public float speed;
 
+    bool canAttack;
+    public float attackCooldown = 2;
+
+    StatsManager statsManager;
+
+    public float maxHealth = 100;
+    float currentHealth;
+
     void Start()
     {
+        currentHealth = maxHealth;
+        statsManager = player.GetComponent<StatsManager>();
+        canAttack = true;
         currentWaypoint = 0;
         agent = GetComponent<NavMeshAgent>();
+        agent.speed = speed;
     }
 
     void Update()
     {
-        float distance = Vector3.Distance(transform.position, player.transform.position);
+        if (currentHealth <= 0)
+        {
+            Destroy(gameObject);
+        }
 
-        if (distance <= 2f)
+        Vector3 direction = transform.position - player.transform.position;
+        RaycastHit hit;
+
+        if (Physics.Raycast(player.transform.position, direction.normalized, out hit, direction.magnitude))
         {
-            agent.isStopped = true;
-            agent.speed = 0f;
-            attack();
+            float distance = hit.distance;
+            Debug.Log(distance);
+
+            if (distance <= 2f)
+            {
+                agent.isStopped = true;
+                if (canAttack)
+                {
+                    StartCoroutine(Attack());
+                }
+            }
+            else if (distance <= 10)
+            {
+                agent.isStopped = false;
+                agent.SetDestination(player.transform.position);
+            }
+            else
+            {
+                agent.isStopped = false;
+                agent.SetDestination(waypoints[currentWaypoint].transform.position);
+            }
         }
-        else if (distance <= 10)
-        {
-            agent.isStopped = false;
-            agent.speed = speed;
-            agent.SetDestination(player.transform.position);
-        }
-        else
-        {
-            agent.isStopped = false;
-            agent.speed = speed;
-            agent.SetDestination(waypoints[currentWaypoint].transform.position);
-        }
+
     }
 
-    public void attack()
-    {
-
-    }
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -70,9 +92,42 @@ public class Enemy2Script : MonoBehaviour
 
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "SmallShot")
+        {
+            currentHealth -= 10;
+            statsManager.changeTimesHit(1);
+        }
+        else if (other.gameObject.tag == "MedShot")
+        {
+            currentHealth -= 20;
+            statsManager.changeTimesHit(1);
+        }
+        else if (other.gameObject.tag == "LargShot")
+        {
+            currentHealth -= 30;
+            statsManager.changeTimesHit(1);
+        }
+        else if (other.gameObject.tag == "FriendShot")
+        {
+            currentHealth -= 10;
+        }
+        else if (other.gameObject.tag == "ShotgunPellet")
+        {
+            currentHealth -= 5;
+            statsManager.changeTimesHit(1);
+        }
 
+    }
 
+    IEnumerator Attack()
+    {
+        canAttack = false;
 
+        statsManager.changeHealth(-10);
+        yield return new WaitForSeconds(attackCooldown);
 
-
+        canAttack = true;
+    }
 }

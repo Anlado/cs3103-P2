@@ -20,10 +20,4 @@ public class InvUIHandler : MonoBehaviour
             invUI.SetActive(!invUI.activeInHierarchy);
         }
     }
-
-    public void addNewButton()
-    {
-
-    }
-
 }

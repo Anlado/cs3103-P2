@@ -14,6 +14,18 @@ TagManager:
   - waypoint5
   - EnemyShot
   - FriendlyShot
+  - Enemy2
+  - SmallShot
+  - MedShot
+  - LargShot
+  - LargShotPickup
+  - MedShotPickup
+  - SmallShotPickup
+  - FullHealth
+  - LargeSpeed
+  - MedSpeed
+  - SmallSpeed
+  - ShotgunPickup
   layers:
   - Default
   - TransparentFX

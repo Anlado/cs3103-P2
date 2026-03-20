@@ -3,6 +3,7 @@ using TMPro;
 using Unity.Jobs;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class InventoryScript : MonoBehaviour
@@ -15,16 +16,19 @@ public class InventoryScript : MonoBehaviour
     private bool quickSlotSelection;
     private int tempButtonID;
 
-    Stats playerStats;
-
     public TextMeshProUGUI invText;
+    public TextMeshProUGUI FullText;
+
+    public GameObject player;
+    StatsManager statsManager;
 
     void Start()
     {
+        FullText.text = "";
+        statsManager = player.GetComponent<StatsManager>();
         QSPointers = new InventoryItem[4];
         System.Array.Fill(QSPointers, null);
         Inventory = new List<InventoryItem>();
-        playerStats = new Stats(100f);
         updateInvUI();
         quickSlotSelection = false;
         tempButtonID = -1;
@@ -33,28 +37,25 @@ public class InventoryScript : MonoBehaviour
 
     private void Update()
     {
-        /*
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Keyboard.current.digit1Key.wasPressedThisFrame)
         {
             QSButtonPress(0);
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        else if (Keyboard.current.digit2Key.wasPressedThisFrame)
         {
             QSButtonPress(1);
 
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        else if (Keyboard.current.digit3Key.wasPressedThisFrame)
         {
             QSButtonPress(2);
 
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha4))
+        else if (Keyboard.current.digit4Key.wasPressedThisFrame)
         {
             QSButtonPress(3);
 
         }
-        */
-
     }
 
     private bool addItem(InventoryItem item)
@@ -76,7 +77,7 @@ public class InventoryScript : MonoBehaviour
         return false;
     }
 
-    private void OnTriggerEnter(Collider collision)
+    private void OnTriggerStay(Collider collision)
     {
         if (collision.gameObject.tag == "SmallHealth")
         {
@@ -108,12 +109,91 @@ public class InventoryScript : MonoBehaviour
 
             }
         }
+        else if (collision.gameObject.tag == "FullHealth")
+        {
+            if (addItem(new InventoryItem("FullHealth")))
+            {
+                Destroy(collision.gameObject);
+                printInventoryContents();
+                updateInvUI();
+
+            }
+        }
+        else if (collision.gameObject.tag == "LargShotPickup")
+        {
+            if (addItem(new InventoryItem("LargeShot", 5)))
+            {
+                Destroy(collision.gameObject);
+                printInventoryContents();
+                updateInvUI();
+            }
+        }
+        else if (collision.gameObject.tag == "MedShotPickup")
+        {
+            if (addItem(new InventoryItem("MediumShot", 5)))
+            {
+                Destroy(collision.gameObject);
+                printInventoryContents();
+                updateInvUI();
+            }
+        }
+        else if (collision.gameObject.tag == "SmallShotPickup")
+        {
+            if (addItem(new InventoryItem("SmallShot", 5)))
+            {
+                Destroy(collision.gameObject);
+                printInventoryContents();
+                updateInvUI();
+            }
+        }
+        else if (collision.gameObject.tag == "LargeSpeed")
+        {
+            if (addItem(new InventoryItem("LargeSpeed", 1)))
+            {
+                Destroy(collision.gameObject);
+                printInventoryContents();
+                updateInvUI();
+            }
+        }
+        else if (collision.gameObject.tag == "MedSpeed")
+        {
+            if (addItem(new InventoryItem("MediumSpeed", 1)))
+            {
+                Destroy(collision.gameObject);
+                printInventoryContents();
+                updateInvUI();
+            }
+        }
+        else if (collision.gameObject.tag == "SmallSpeed")
+        {
+            if (addItem(new InventoryItem("SmallSpeed", 1)))
+            {
+                Destroy(collision.gameObject);
+                printInventoryContents();
+                updateInvUI();
+            }
+        }
+        else if (collision.gameObject.tag == "ShotgunPickup")
+        {
+            if (addItem(new InventoryItem("Shotgun", 5)))
+            {
+                Destroy(collision.gameObject);
+                printInventoryContents();
+                updateInvUI();
+            }
+        }
         else
         {
-            invText.text = "Inventory Full";
-            CancelInvoke(nameof(clearText)); 
-            Invoke(nameof(clearText), 2f);
+            if (Inventory.Count >= 12)
+            {
+                invText.text = "Inventory Full";
+            }
         }
+    }
+
+    private void OnTriggerExit(Collider collision)
+    {
+        FullText.text = "";
     }
 
     private void clearText()
@@ -126,16 +206,127 @@ public class InventoryScript : MonoBehaviour
         switch (itemName)
         {
             case "SmallHealth":
-                playerStats.changeHealth(10);
-                break;
+                {
+                    statsManager.GetComponent<StatsManager>().changeHealth(10);
+                    statsManager.changeItemsUsed(1);
+                    break;
+                }
             case "MedHealth":
-                playerStats.changeHealth(20);
-                break;
+                {
+                    statsManager.GetComponent<StatsManager>().changeHealth(20);
+                    statsManager.changeItemsUsed(1);
+                    break;
+                }
             case "LargeHealth":
-                playerStats.changeHealth(30);
-                break;
-        }
+                {
+                    statsManager.GetComponent<StatsManager>().changeHealth(30);
+                    statsManager.changeItemsUsed(1);
+                    break;
+                }
+            case "FullHealth":
+                {
+                    statsManager.GetComponent<StatsManager>().changeHealth(100);
+                    statsManager.changeItemsUsed(1);
+                    break;
+                }
+            case "LargeSpeed":
+                {
+                    player.GetComponent<MovementScript>().ApplySpeedBoost(20);
+                    statsManager.changeItemsUsed(1);
+                    break;
+                }
+            case "MediumSpeed":
+                {
+                    player.GetComponent<MovementScript>().ApplySpeedBoost(15);
+                    statsManager.changeItemsUsed(1);
+                    break;
+                }
+            case "SmallSpeed":
+                {
+                    player.GetComponent<MovementScript>().ApplySpeedBoost(10);
+                    statsManager.changeItemsUsed(1);
+                    break;
+                }
+            case "LargeShot":
+                {
+                    //Usage of Resources.Load
+                    GameObject projectilePrefab = Resources.Load<GameObject>("BigShot");
+                    GameObject instantiatedProjectile = Instantiate(projectilePrefab, transform.position, transform.rotation);
+                    Rigidbody rb = instantiatedProjectile.GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        rb.linearVelocity = transform.forward * 5;
+                    }
 
+                    Destroy(instantiatedProjectile, 5f);
+                    statsManager.changeItemsUsed(1);
+                    statsManager.changeShotsFired(1);
+                    break;
+                }
+            case "MediumShot":
+                {
+                    GameObject projectilePrefab = Resources.Load<GameObject>("MedShot");
+                    GameObject instantiatedProjectile = Instantiate(projectilePrefab, transform.position, transform.rotation);
+                    Rigidbody rb = instantiatedProjectile.GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        rb.linearVelocity = transform.forward * 10;
+                    }
+
+                    Destroy(instantiatedProjectile, 5f);
+                    statsManager.changeItemsUsed(1);
+                    statsManager.changeShotsFired(1);
+                    break;
+                }
+            case "SmallShot":
+                {
+                    GameObject projectilePrefab = Resources.Load<GameObject>("SmallShot");
+                    GameObject instantiatedProjectile = Instantiate(projectilePrefab, transform.position, transform.rotation);
+                    Rigidbody rb = instantiatedProjectile.GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        rb.linearVelocity = transform.forward * 15;
+                    }
+
+                    Destroy(instantiatedProjectile, 5f);
+                    statsManager.changeItemsUsed(1);
+                    statsManager.changeShotsFired(1);
+                    break;
+                }
+            case "Shotgun":
+                {
+                    GameObject prefab = Resources.Load<GameObject>("ShotgunPellet");
+                    if (prefab == null) return;
+
+                    int pelletCount = 6;
+                    float spreadAngle = 15f;
+                    float projectileSpeed = 20f;
+
+                    for (int i = 0; i < pelletCount; i++)
+                    {
+                        Quaternion rot = transform.rotation * Quaternion.Euler(
+                            Random.Range(-spreadAngle, spreadAngle),
+                            Random.Range(-spreadAngle, spreadAngle),
+                            0f
+                        );
+
+                        GameObject proj = Instantiate(prefab, transform.position + transform.forward, rot);
+
+                        Rigidbody rb = proj.GetComponent<Rigidbody>();
+                        if (rb != null)
+                        {
+                            rb.useGravity = false;
+                            rb.linearVelocity = proj.transform.forward * projectileSpeed;
+                        }
+
+                        Destroy(proj, 5f);
+                    }
+                    statsManager.changeItemsUsed(1);
+                    statsManager.changeShotsFired(1);
+                    break;
+                }
+                
+        }
     }
 
     private void printInventoryContents()
@@ -259,11 +450,12 @@ public class InventoryScript : MonoBehaviour
         }
         else
         {
-            if (tempButtonID < Inventory.Count)
+            Debug.Log(tempButtonID);
+            if (tempButtonID != -1 && tempButtonID < Inventory.Count)
             {
                 QSPointers[QSButtonID] = Inventory[tempButtonID];
+                tempButtonID = -1;
             }
-
             quickSlotSelection = !quickSlotSelection;
             clearText();
         }
